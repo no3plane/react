@@ -154,3 +154,11 @@ You can test the standalone DevTools by running the following:
 * 其他
   * backend 调试：调整 webpack 配置，devtools 选项去掉 eval，不然加载 backend 时调试器好像看不到源码
   * standadlone 调试：可以把 preload 脚本中的 contextBridge.exposeInMainWorld 去掉，禁用 electron 的上下文隔离，在 html 文件中直接引入 standalone.js，这样可以方便在渲染进程中调试源码
+
+### 如何使用
+先构建
+- 运行 `scripts\devtools\build-and-test.js` 脚本
+
+再替换
+- 独立版的替换方式：用 `packages\react-devtools-core\dist` 替换掉 `C:\Program Files\nodejs\node_modules\react-devtools\node_modules\react-devtools-core\dist` 下的文件
+- 插件版的替换方式：在浏览器的扩展页面加载解压缩的扩展，选择 `packages\react-devtools-extensions\edge\build\unpacked`
