@@ -143,3 +143,14 @@ You can test the standalone DevTools by running the following:
 * Run `yarn start` in `packages/react-devtools`
 * Refresh the app after it has recompiled a change
 * For React Native, copy `react-devtools-core` to its `node_modules` to test your changes.
+
+### 用 react-devtools 调试 react-devtools
+* 全局的 react-devtools
+  * 侦听 1234：PowerShell 设置环境变量 `$env:PORT = 1234`，然后启动 react-devtools
+* 当前的 react-devtools
+  * 连接 1234：`<script src="http://localhost:1234" />`
+* 某个项目
+  * 连接 8097：`<script src="http://localhost:8097" />`
+* 其他
+  * backend 调试：调整 webpack 配置，devtools 选项去掉 eval，不然加载 backend 时调试器好像看不到源码
+  * standadlone 调试：可以把 preload 脚本中的 contextBridge.exposeInMainWorld 去掉，禁用 electron 的上下文隔离，在 html 文件中直接引入 standalone.js，这样可以方便在渲染进程中调试源码
