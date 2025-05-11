@@ -194,7 +194,9 @@ export default function ComponentsSettings({
               type: ComponentFilterCustom,
               isEnabled: componentFilter.isEnabled,
               isValid: true,
-              value: `// 请输入满足该定义的函数体 (data: Object, type: 'fiber' | 'componentInfo') => boolean`,
+              value:
+                `// 请输入满足该定义的函数体 (data: Object, type: 'fiber' | 'componentInfo') => boolean\n` +
+                '// 浏览器下由于 CSP，目前只能使用预设，请输入 yxt 或 boss', // TODO 先简单处理吧，后面可以通过设定一套规则来实现筛选，而不是直接注入函数
             };
           }
         }
@@ -273,8 +275,12 @@ export default function ComponentsSettings({
           if (index >= 0) {
             let isValid = true;
             try {
-              const fn = new Function('data', 'type', value); // eslint-disable-line no-new-func
-              fn({}, 'fiber');
+              if (value === 'yxt') {
+              } else if (value === 'boss') {
+              } else {
+                const fn = new Function('data', 'type', value); // eslint-disable-line no-new-func
+                fn({}, 'fiber');
+              }
             } catch (error) {
               isValid = false;
             }

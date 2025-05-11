@@ -1379,10 +1379,24 @@ export function attach(
         case ComponentFilterCustom:
           if (componentFilter.isValid && componentFilter.value !== '') {
             try {
-
-            hideElementsWithCustom.add(
-              new Function('data', 'type', componentFilter.value), // eslint-disable-line no-new-func
-              );
+              // TODO 浏览器下有 CSP，目前先使用预设简单处理，实现功能
+              if (componentFilter.value === 'yxt') {
+                hideElementsWithCustom.add((data, type) => {
+                  if (type === 'fiber') {
+                    return !data.memoizedProps?.['data-locatorjs-id'];
+                  }
+                });
+              } else if (componentFilter.value === 'boss') {
+                hideElementsWithCustom.add((data, type) => {
+                  if (type === 'fiber') {
+                    return !data._debugSource?.fileName;
+                  }
+                });
+              } else {
+                hideElementsWithCustom.add(
+                  new Function('data', 'type', componentFilter.value), // eslint-disable-line no-new-func
+                );
+              }
             } catch (error) {
               console.error(error);
             }

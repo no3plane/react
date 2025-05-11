@@ -46,7 +46,7 @@ const babelOptions = {
 
 module.exports = {
   mode: __DEV__ ? 'development' : 'production',
-  devtool: false,
+  devtool: 'source-map',
   entry: {
     background: './src/background/index.js',
     backendManager: './src/contentScripts/backendManager.js',
