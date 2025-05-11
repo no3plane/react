@@ -91,6 +91,10 @@
   margin-left: .5rem;
 }
 
+.Textarea {
+  width: 100%;
+}
+
 .InvalidRegExp,
 .InvalidRegExp:active,
 .InvalidRegExp:focus,

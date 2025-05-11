@@ -33,6 +33,7 @@ import {
   ComponentFilterHOC,
   ComponentFilterLocation,
   ComponentFilterEnvironmentName,
+  ComponentFilterCustom,
   ElementTypeClass,
   ElementTypeContext,
   ElementTypeFunction,
@@ -57,6 +58,7 @@ import type {
   ElementTypeComponentFilter,
   RegExpComponentFilter,
   EnvironmentNameComponentFilter,
+  CustomComponentFilter,
 } from 'react-devtools-shared/src/frontend/types';
 import {isInternalFacebookBuild} from 'react-devtools-feature-flags';
 
@@ -187,6 +189,13 @@ export default function ComponentsSettings({
               isValid: true,
               value: 'Client',
             };
+          } else if (type === ComponentFilterCustom) {
+            cloned[index] = {
+              type: ComponentFilterCustom,
+              isEnabled: componentFilter.isEnabled,
+              isValid: true,
+              value: `// 请输入满足该定义的函数体 (data: Object, type: 'fiber' | 'componentInfo') => boolean`,
+            };
           }
         }
         return cloned;
@@ -235,6 +244,37 @@ export default function ComponentsSettings({
             let isValid = true;
             try {
               new RegExp(value); // eslint-disable-line no-new
+            } catch (error) {
+              isValid = false;
+            }
+            cloned[index] = {
+              ...componentFilter,
+              isValid,
+              value,
+            };
+          }
+        }
+        return cloned;
+      });
+    },
+    [],
+  );
+
+  const updateFilterCustom = useCallback(
+    (componentFilter: ComponentFilter, value: string) => {
+      if (componentFilter.type !== ComponentFilterCustom) {
+        throw Error('Invalid value for custom filter');
+      }
+
+      setComponentFilters(prevComponentFilters => {
+        const cloned: Array<ComponentFilter> = [...prevComponentFilters];
+        if (componentFilter.type === ComponentFilterCustom) {
+          const index = prevComponentFilters.indexOf(componentFilter);
+          if (index >= 0) {
+            let isValid = true;
+            try {
+              const fn = new Function('data', 'type', value); // eslint-disable-line no-new-func
+              fn({}, 'fiber');
             } catch (error) {
               isValid = false;
             }
@@ -313,6 +353,11 @@ export default function ComponentsSettings({
           } else if (componentFilter.type === ComponentFilterEnvironmentName) {
             cloned[index] = {
               ...((cloned[index]: any): EnvironmentNameComponentFilter),
+              isEnabled,
+            };
+          } else if (componentFilter.type === ComponentFilterCustom) {
+            cloned[index] = {
+              ...((cloned[index]: any): CustomComponentFilter),
               isEnabled,
             };
           }
@@ -454,6 +499,7 @@ export default function ComponentsSettings({
                       environment
                     </option>
                   )}
+                  <option value={ComponentFilterCustom}>custom</option>
                 </select>
               </td>
               <td className={styles.TableCell}>
@@ -529,6 +575,18 @@ export default function ComponentsSettings({
                       </option>
                     ))}
                   </select>
+                )}
+                {componentFilter.type === ComponentFilterCustom && (
+                  <textarea
+                    className={styles.Textarea}
+                    placeholder="自定义过滤方法"
+                    onChange={({currentTarget}) =>
+                      updateFilterCustom(componentFilter, currentTarget.value)
+                    }
+                    value={componentFilter.value}
+                    rows={3}
+                    wrap="off"
+                  />
                 )}
               </td>
               <td className={styles.TableCell}>

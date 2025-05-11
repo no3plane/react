@@ -15,6 +15,7 @@ import {
   ComponentFilterHOC,
   ComponentFilterLocation,
   ComponentFilterEnvironmentName,
+  ComponentFilterCustom,
   ElementTypeClass,
   ElementTypeContext,
   ElementTypeFunction,
@@ -1335,6 +1336,7 @@ export function attach(
   const hideElementsWithPaths: Set<RegExp> = new Set();
   const hideElementsWithTypes: Set<ElementType> = new Set();
   const hideElementsWithEnvs: Set<string> = new Set();
+  const hideElementsWithCustom: Set<Function> = new Set();
 
   // Highlight updates
   let traceUpdatesEnabled: boolean = false;
@@ -1345,6 +1347,7 @@ export function attach(
     hideElementsWithDisplayNames.clear();
     hideElementsWithPaths.clear();
     hideElementsWithEnvs.clear();
+    hideElementsWithCustom.clear();
 
     componentFilters.forEach(componentFilter => {
       if (!componentFilter.isEnabled) {
@@ -1372,6 +1375,18 @@ export function attach(
           break;
         case ComponentFilterEnvironmentName:
           hideElementsWithEnvs.add(componentFilter.value);
+          break;
+        case ComponentFilterCustom:
+          if (componentFilter.isValid && componentFilter.value !== '') {
+            try {
+
+            hideElementsWithCustom.add(
+              new Function('data', 'type', componentFilter.value), // eslint-disable-line no-new-func
+              );
+            } catch (error) {
+              console.error(error);
+            }
+          }
           break;
         default:
           console.warn(
@@ -1485,6 +1500,17 @@ export function attach(
       }
     }
 
+    if (hideElementsWithCustom.size > 0) {
+      // eslint-disable-next-line no-for-of-loops/no-for-of-loops
+      for (const customFilter of hideElementsWithCustom) {
+        try {
+          if (customFilter(data, 'componentInfo')) {
+            return true;
+          }
+        } catch {}
+      }
+    }
+
     if (
       (data.env == null || hideElementsWithEnvs.has(data.env)) &&
       (secondaryEnv === null || hideElementsWithEnvs.has(secondaryEnv))
@@ -1548,6 +1574,17 @@ export function attach(
             return true;
           }
         }
+      }
+    }
+
+    if (hideElementsWithCustom.size > 0) {
+      // eslint-disable-next-line no-for-of-loops/no-for-of-loops
+      for (const customFilter of hideElementsWithCustom) {
+        try {
+          if (customFilter(fiber, 'fiber')) {
+            return true;
+          }
+        } catch {}
       }
     }
 

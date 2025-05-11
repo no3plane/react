@@ -328,6 +328,26 @@ export function createLocationFilter(
   };
 }
 
+export function createCustomFilter(
+  functionBody: string,
+  isEnabled: boolean = true,
+) {
+  const Types = require('react-devtools-shared/src/frontend/types');
+  let isValid = true;
+  try {
+    const fn = new Function('data', 'type', functionBody); // eslint-disable-line no-new-func
+    fn({}, 'fiber');
+  } catch (error) {
+    isValid = false;
+  }
+  return {
+    type: Types.ComponentFilterCustom,
+    isEnabled,
+    isValid,
+    value: functionBody,
+  };
+}
+
 export function getRendererID(): number {
   if (global.agent == null) {
     throw Error('Agent unavailable.');
